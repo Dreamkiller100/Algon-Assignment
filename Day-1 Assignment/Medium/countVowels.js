@@ -18,6 +18,6 @@ const input1 = "Hello World";
 const input2 = "AEIOUaeiou";
 const input3 = "xyz";
 
-console.log(`Vowels in "${input1}":`, countVowels(input1)); // 3
-console.log(`Vowels in "${input2}":`, countVowels(input2)); // 10
-console.log(`Vowels in "${input3}":`, countVowels(input3)); // 0
+console.log(`Vowels in "${input1}":`, countVowels(input1)); 
+console.log(`Vowels in "${input2}":`, countVowels(input2)); 
+console.log(`Vowels in "${input3}":`, countVowels(input3)); 
