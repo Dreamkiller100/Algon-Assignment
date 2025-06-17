@@ -1,3 +1,0 @@
-This is another file in the directory.
-Testing file server response!
-
