@@ -1,15 +1,21 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const fs = require('fs');
-const app = express();
+import open from 'open';
+import express from 'express';
+import bodyParser from 'body-parser';
+import fs from 'fs';
+//const open = require('open');
 
+const app = express();
 app.use(bodyParser.json());
 
-let todos = [];
-let lastId = 0;
+let todos = [
+  { id: 1, task: 'Buy groceries', done: false },
+  { id: 2, task: 'Do homework', done: true }
+];
+let lastId = 2;
 
-// Load from file if exists
 const FILE_PATH = 'todos.json';
+
+// Load from file if it exists
 if (fs.existsSync(FILE_PATH)) {
   const fileData = fs.readFileSync(FILE_PATH);
   todos = JSON.parse(fileData);
@@ -23,26 +29,24 @@ function saveToFile() {
   fs.writeFileSync(FILE_PATH, JSON.stringify(todos, null, 2));
 }
 
-// GET /todos - Get all todos
+// Get all todos
 app.get('/todos', (req, res) => {
   res.status(200).json(todos);
 });
 
-// GET /todos/:id - Get todo by ID
+// Get a specific todo
 app.get('/todos/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const todo = todos.find(t => t.id === id);
-  if (!todo) {
-    return res.status(404).send('Not Found');
-  }
+  if (!todo) return res.status(404).send('Not Found');
   res.status(200).json(todo);
 });
 
-// POST /todos - Create new todo
+// Create a new todo
 app.post('/todos', (req, res) => {
   const { title, description } = req.body;
   if (!title || !description) {
-    return res.status(400).send('Bad Request: Missing title or description');
+    return res.status(400).send('Missing title or description');
   }
   const newTodo = {
     id: ++lastId,
@@ -55,35 +59,37 @@ app.post('/todos', (req, res) => {
   res.status(201).json({ id: newTodo.id });
 });
 
-// PUT /todos/:id - Update todo
+// Update a todo
 app.put('/todos/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  const todoIndex = todos.findIndex(t => t.id === id);
-  if (todoIndex === -1) {
-    return res.status(404).send('Not Found');
-  }
-  const existing = todos[todoIndex];
-  const updated = { ...existing, ...req.body, id };
-  todos[todoIndex] = updated;
+  const index = todos.findIndex(t => t.id === id);
+  if (index === -1) return res.status(404).send('Not Found');
+  const updated = { ...todos[index], ...req.body, id };
+  todos[index] = updated;
   saveToFile();
   res.status(200).json(updated);
 });
 
-// DELETE /todos/:id - Delete todo
+// Delete a todo
 app.delete('/todos/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const index = todos.findIndex(t => t.id === id);
-  if (index === -1) {
-    return res.status(404).send('Not Found');
-  }
+  if (index === -1) return res.status(404).send('Not Found');
   todos.splice(index, 1);
   saveToFile();
   res.status(200).send('Deleted');
 });
 
-// Handle all other routes
+// Fallback route
 app.use((req, res) => {
   res.status(404).send('Route Not Found');
 });
 
-module.exports = app;
+import { exec } from 'child_process';
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}/todos`);
+  exec(`start chrome http://localhost:${PORT}/todos`);
+});
